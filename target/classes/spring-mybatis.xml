@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- 数据源配置，使用阿里巴巴数据库连接管理 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 数据源基本属性设置 -->
+		<property name="driverClassName" value="${jdbc_driverClassName}"></property>
+		<property name="url" value="${jdbc_url}"></property>
+		<property name="username" value="${jdbc_username}"></property>
+		<property name="password" value="${jdbc_password}"></property>
+
+		<!-- 配置初始化大小，最大最小值 -->
+		<property name="initialSize" value="10"></property>
+		<property name="maxActive" value="50"></property>
+		<property name="minIdle" value="10"></property>
+
+		<!-- 配置数据库连接超时等待时间 -->
+		<property name="maxWait" value="6000"></property>
+		<!-- 配置检测关闭空闲连接 单位毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000"></property>
+		<!-- 配置一个连接池中最小生存时间 单位毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000"></property>
+	</bean>
+
+	<!-- Spring 和Mybatis完美整合，不需要mybatis配置文件 -->
+	<bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 自动扫描mapping.xml文件 -->
+		<property name="mapperLocations" value="classpath:cn/weilianni/shop/mapper/*.xml"></property>
+	</bean>
+
+	<!-- 配置Dao接口所在的包 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.weilianni.shop.dao"></property>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean"></property>
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- 配置基于注解的声明式事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>
